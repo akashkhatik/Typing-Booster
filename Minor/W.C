@@ -1,0 +1,291 @@
+#include<stdio.h>
+#include<conio.h>
+#include<dos.h>
+#define x1 2
+#define y1 1
+#define x2 79
+#define y2 25
+int i,j;
+char temp[25]={"THE WAY YOU TYPE"};
+void booster();
+void outer()
+{
+	gotoxy(x1,y1);
+	putch(201);        //left upper
+	gotoxy(x2,y1);
+	putch(187);        //right upper
+	gotoxy(x1,y2);
+	putch(200);        //left lower
+	gotoxy(x2,y2);
+	putch(188);          //right lower
+	for(i=x1+1;i<x2;i++)
+	{
+		gotoxy(i,y1);   //big box upper and lower double line
+		putch(205);
+		gotoxy(i,y2);
+		putch(205);
+	}
+	for(i=y1+1;i<y2;i++)
+	{
+		gotoxy(x2,i);
+		putch(186);        //big box left and right double line
+		gotoxy(x1,i);
+		putch(186);
+	}
+}
+void typing()
+{
+	for(i=0;i<9;i++)
+	{
+		delay(20);
+		gotoxy(x1+14+i,y1+2);
+		putch(220);    //T --
+		gotoxy(x1+40+i,y1+2);
+		putch(220);    //I --
+		gotoxy(x1+40+i,y1+6);
+		putch(220);     // I --
+	}
+	for(i=0;i<4;i++)
+	{
+		delay(20);
+		gotoxy(x1+18,y1+3+i);
+		putch(219); // T |
+		gotoxy(x1+32,y1+3+i);
+		putch(219); // P |
+		gotoxy(x1+44,y1+3+i);
+		putch(219);  // I  |
+		gotoxy(x1+50,y1+3+i);
+		putch(219);   // N |
+		gotoxy(x1+57,y1+3+i);
+		putch(219);       // N |
+		gotoxy(x1+59,y1+3+i);
+		putch(219);   //G
+	}
+	booster();
+	for(i=0;i<2;i++)
+	{
+		delay(20);
+		gotoxy(x1+24+i,y1+3+i);
+		putch(219);        //Y  \
+		gotoxy(x1+30-i,y1+3+i);
+		putch(219);          //Y  /
+		gotoxy(x1+27,y1+5+i);
+		putch(219);          //Y |
+		gotoxy(x1+38,y1+3+i);
+		putch(219);       //P  |
+		gotoxy(x1+65,y1+5+i);
+		putch(219);  //G \
+
+	}
+	for(i=0;i<4;i++)
+	{       delay(50);
+		gotoxy(x1+52+i,y1+3+i);
+		putch(219);   // N \
+	}
+	for(i=0;i<6;i++)
+	{       delay(20);
+		gotoxy(x1+33+i,y1+4);
+		putch(220);  //P --
+		gotoxy(x1+33+i,y1+2);
+		putch(220);        //P --
+		gotoxy(x1+59+i,y1+2);
+		putch(220);  //G --
+		gotoxy(x1+59+i,y1+6);
+		putch(220);       //G --
+	}
+	for(i=0;i<4;i++)
+	{       delay(20);
+		gotoxy(x1+62+i,y1+4);
+		putch(220); // G -
+	}
+	delay(20);
+	gotoxy(x1+24,y1+2);
+	putch(220);      //Y
+	gotoxy(x1+30,y1+2);
+	putch(220);        //Y
+	gotoxy(x1+26,y1+4);
+	putch(220);           //Y
+	gotoxy(x1+28,y1+4);
+	putch(220);           //Y
+	gotoxy(x1+32,y1+2);
+	putch(220);      //P
+	gotoxy(x1+38,y1+4);
+	putch(219);   //P
+	for(i=0;i<3;i++)
+	{
+	delay(20);
+	gotoxy(x1+50+i,y1+2);    // N
+	putch(220);
+	}
+	delay(20);
+	gotoxy(x1+57,y1+2);
+	putch(220);    //N
+	gotoxy(x1+56,y1+6);
+	putch(220);       //N
+	gotoxy(x1+59,y1+6);
+	putch(219);  //G
+}
+void smallest()
+{
+	gotoxy(x1+9,y1+15);
+	putch(201);            //left upper
+	gotoxy(x2-8,y1+15);
+	putch(187);            //right upper
+	gotoxy(x1+9,y1+17);
+	putch(200);              //left lower
+	gotoxy(x2-8,y1+17);
+	putch(188);                  //right lower
+	for(i=x1+10;i<x1+69;i++)
+	{
+		gotoxy(i,y1+15);        //small box upper and lower line
+		putch(205);
+		gotoxy(i,y1+17);
+		putch(205);
+	}
+	for(i=y1+16;i<y1+17;i++)
+	{
+		gotoxy(x1+9,i);       //small box left and right line
+		putch(186);
+		gotoxy(x2-8,i);
+		putch(186);
+	}
+}
+void message(int color)
+{	gotoxy(x1+31,y1+16);
+	for(i=0;i<25;i++)                //for the way you type
+	{
+		_setcursortype(_NOCURSOR);
+		highvideo();
+		textcolor(color);
+		textbackground(0);
+		cprintf("%c",temp[i]);
+		delay(50);
+	}
+	for(i=0;i<2;i++)                 // for "--" printing
+	{
+		for(j=0;j<5;j++)
+		{
+			gotoxy(x1+30-j,y1+16);
+			cprintf("-");
+			gotoxy(x1+47+j,y1+16);
+			cprintf("-");
+			delay(100);
+			gotoxy(x1+30-j,y1+16);
+			cprintf(" ");
+			gotoxy(x1+47+j,y1+16);
+			cprintf(" ");
+		}
+	}
+		for(j=0;j<5;j++)          //for last printing of "--"lines
+		{
+			gotoxy(x1+30-j,y1+16);
+			cprintf("-");
+			gotoxy(x1+47+j,y1+16);
+			cprintf("-");
+			delay(100);
+
+		}
+}
+void booster()
+{
+	for(i=0;i<8;i++)
+	{
+		delay(20);
+		gotoxy(x1+9+i,y1+8);
+		putch(220);     // B -
+		gotoxy(x1+9+i,y1+10);
+		putch(220);        // B -
+		gotoxy(x1+9+i,y1+12);
+		putch(220);           //B -
+		gotoxy(x1+18+i,y1+8);
+		putch(220);    // O --
+		gotoxy(x1+27+i,y1+8);
+		putch(220);      // O --
+		gotoxy(x1+18+i,y1+12);
+		putch(220);      // O --
+		gotoxy(x1+27+i,y1+12);
+		putch(220);          // O--
+		gotoxy(x1+36+i,y1+8);
+		putch(220);     // S --
+		gotoxy(x1+36+i,y1+12);
+		putch(220);         // S --
+		gotoxy(x1+36+i,y1+10);
+		putch(220);             // S --
+		gotoxy(x1+45+i,y1+8);
+		putch(220);        // T --
+		gotoxy(x1+54+i,y1+8);
+		putch(220);         // E --
+		gotoxy(x1+54+i,y1+10);
+		putch(220);           // E --
+		gotoxy(x1+54+i,y1+12);
+		putch(220);            // E--
+	}
+	for(i=0;i<4;i++)
+	{
+		delay(20);
+		gotoxy(x1+9,y1+9+i);
+		putch(219);       // B |
+		gotoxy(x1+16,y1+9+i);
+		putch(219);     // B |
+		gotoxy(x1+18,y1+9+i);
+		putch(219);   // O |
+		gotoxy(x1+25,y1+9+i);
+		putch(219);       // O |
+		gotoxy(x1+27,y1+9+i);
+		putch(219);         // O |
+		gotoxy(x1+34,y1+9+i);
+		putch(219);          // O |
+		gotoxy(x1+48,y1+9+i);
+		putch(219);    // T |
+		gotoxy(x1+54,y1+9+i);
+		putch(219);      // E |
+		gotoxy(x1+63,y1+9+i);
+		putch(219);   // R |
+	}
+	for(i=0;i<2;i++)
+	{
+		delay(20);
+		gotoxy(x1+36,y1+9+i);
+		putch(219);    //S |
+		gotoxy(x1+43,y1+11+i);
+		putch(219);        //  S |
+		gotoxy(x1+69,y1+9+i);
+		putch(219);    // R |
+	}
+	for(i=0;i<5;i++)
+	{       delay(20);
+		gotoxy(x1+64+i,y1+10);
+		putch(220);    //R -
+		gotoxy(x1+64+i,y1+8);
+		putch(220);   // R --
+	}
+	for(i=0;i<2;i++)
+	{       delay(10);
+		gotoxy(x1+67+i,y1+11+i);  // for R
+		putch(220);
+	}
+	delay(10);
+	gotoxy(x1+63,y1+8);    // all are for R
+	putch(220);
+	gotoxy(x1+69,y1+8);
+	putch(220);
+	gotoxy(x1+69,y1+12);
+	putch(220);
+	gotoxy(x1+66,y1+11);
+	putch(220);
+	gotoxy(x1+67,y1+12);
+	putch(219);
+	gotoxy(x1+65,y1+11);
+	putch(219);
+    }
+void welcome()
+{
+	clrscr();
+	textbackground(2);
+	outer();          //for outer border  box
+	typing();           //for "typing" title
+	highvideo();
+	smallest();        //for smallest box of "the way you type"
+	highvideo();
+	message(10);      //"the way you type"
+}

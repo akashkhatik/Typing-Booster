@@ -1,0 +1,860 @@
+#include<stdio.h>
+#include<conio.h>
+#include<dos.h>
+#include<string.h>
+#include<math.h>
+#include "w.c"
+
+#define UP 72
+#define DOWN 80
+#define LEFT 75
+#define RIGHT 77
+#define REALWINDOW window(1,1,80,25);
+#define ALLCLEAR clrscr();topHeading();_setcursortype(_NOCURSOR);
+
+struct WORD
+{
+  char word[20];
+  int color;
+};
+struct DATA
+{
+  struct date DATE;
+  struct time TIME;
+  int ACCURACY,SPEED;
+};
+
+struct time t;
+struct date d;
+struct WORD W[1000];
+char shabd[20],name[9];
+int begin,end,no_of_words,countSec=0,min,sec,prevSec,RW=0,WW=0;
+
+void typingWindow(int,int);
+void ChotaBox();
+void topHeading();
+void typingContent(int);
+void typingBox(int,int,int,int);
+void Box(int,int,int,int);
+void BadaBox(int);
+void showRemainingTime();
+void result();
+void MainMenu(int);
+void Quit(int);
+void selectPara(int);
+void selectTime(int);
+void showTimeDuration();
+void oops(char*);
+void AddRecord(struct DATA);
+void AddName();
+void records();
+void HELP();
+void restart();
+int netSpeed();
+int NewUser();
+int exUser_status(char[]);
+
+int main()
+{
+  int t=1,Pn=1,n=1,Qn=0,NU;
+  char e;
+  welcome();
+  label1:
+  REALWINDOW                     //  Main Menu window starts from here
+  textbackground(BLACK);
+  ALLCLEAR
+  Box(30,8,50,22);
+  MainMenu(n);
+  while(getch()!='\r')           //  while Enter is not pressed
+  {
+    e=getch();
+    if(e==UP||e==DOWN)
+    {
+      e==UP?n--:n++;
+      if(n==0)
+	n=1;
+      else if(n==6)
+	n=5;
+      else
+	MainMenu(n);
+    }
+  }
+  REALWINDOW
+  switch(n)
+  {
+    case 1:
+      label2:
+      REALWINDOW
+      ALLCLEAR                  // New User window starts from here
+      Box(27,11,53,17);
+      NU=NewUser();
+      if(NU==1)
+	goto label1;
+      if(NU==2)
+      {
+	oops("      This user exixts.\n\r  Please Enter another name.");
+	goto label2;
+      }
+      label3:
+      REALWINDOW               // Paragraph selecting window starts from here
+      textbackground(BLACK);
+      ALLCLEAR
+      Box(26,8,55,24);
+      selectPara(Pn);
+      while(getch()!='\r')
+      {
+	e=getch();
+	if(e==UP||e==DOWN)
+	{
+	  e==UP?Pn--:Pn++;
+	  if(Pn==0)
+	    Pn=1;
+	  else if(Pn==7)
+	    Pn=6;
+	  else
+	    selectPara(Pn);
+	}
+      }
+      if(Pn==6)
+      {
+	Pn=1;
+	goto label1;
+      }
+      REALWINDOW               // Time selecting window starts from here
+      ALLCLEAR
+      Box(29,8,51,24);
+      selectTime(t);
+      while(getch()!='\r')
+      {
+	e=getch();
+	if(e==UP||e==DOWN)
+	{
+	  e==UP?t--:t++;
+	  if(t==0)
+	    t=1;
+	  else if(t==7)
+	    t=6;
+	  else
+	    selectTime(t);
+	}
+      }
+      if(t==6)
+      {
+	t=1;
+	goto label3;
+      }
+      typingWindow(Pn,t);	     // typing window starts from here
+      t=1;Pn=1;n=1;Qn=0;             // reset values
+      goto label1;
+  //break;
+
+    case 2:
+      ALLCLEAR
+      if(exUser_status(">>>>>>> EXISTING USERS <<<<<<<"))
+	goto label3;
+      else
+	goto label1;
+  //break;
+
+    case 3:
+      ALLCLEAR
+      if(exUser_status(">>>>>>>>>>> STATUS <<<<<<<<<<<"))
+	records(name);
+      goto label1;
+  //break;
+
+    case 4:
+      ALLCLEAR
+      HELP();
+      goto label1;
+  //break;
+
+    case 5:
+      textbackground(BLACK);
+      ALLCLEAR                  // Quit window starts from here
+      Box(27,11,53,17);
+      Quit(Qn);        		// Qn=1 for NO & Qn=0 for YES
+      while(getch()!='\r')      // while Enter is not pressed
+      {
+	e=getch();
+	if(e==LEFT||e==RIGHT)
+	{
+	  if(e==LEFT)
+	    Qn=0;
+	  else
+	    Qn=1;
+	  Quit(Qn);
+	}
+      }
+      if(Qn==0)
+	exit(0);
+      else
+      {
+	Qn=0;
+	goto label1;
+      }
+    break;
+  }
+  return 0;
+}
+
+void restart()                        // it'll reset global varibles
+{
+  int i,j;
+  countSec=0;
+  RW=0;
+  WW=0;
+  for(i=0;i<1000;i++)
+  {
+    for(j=0;j<20;j++)
+      W[i].word[j]='\0';
+    W[i].color=2;
+  }
+}
+
+void HELP()                            // it'll show some instructions
+{
+  Box(20,9,60,21);
+  textcolor(WHITE);
+  gotoxy(22,10);
+  cprintf(">>>>>>>>>>>>>>> HELP <<<<<<<<<<<<<<<<");
+  gotoxy(22,13);
+  cprintf("* This software program is basically");
+  gotoxy(22,14);
+  cprintf("  made for boosting up the user's");
+  gotoxy(22,15);
+  cprintf("  typing speed.");
+  gotoxy(22,17);
+  cprintf("* This software program works with ");
+  gotoxy(22,18);
+  cprintf("  keyboard only. Mouse is not");
+  gotoxy(22,19);
+  cprintf("  supported.");
+  getch();
+}
+
+void records()                         // it'll show the record of a person
+{
+  FILE *FP;
+  int i;
+  char filename[13];
+  struct DATA D;
+  REALWINDOW
+  ALLCLEAR
+  gotoxy(33,8);
+  cprintf("NAME - %s",name);
+  Box(20,10,60,23);
+  gotoxy(22,11);
+  cprintf(" SPEED  ACCURACY   TIME       DATE");
+  strcpy(filename,strlwr(name));
+  strcat(filename,".txt");
+  FP=fopen(filename,"rb");
+  for(i=0;fread(&D,sizeof(D),1,FP);i++)
+  {
+    gotoxy(22,13+i);
+    printf("%3d WPM   %3d %%  %02d:%02d:%02d  %02d-%02d-%04d",D.SPEED,D.ACCURACY,D.TIME.ti_hour,D.TIME.ti_min,D.TIME.ti_sec,D.DATE.da_day,D.DATE.da_mon,D.DATE.da_year);
+  }
+  fclose(FP);
+  getch();
+}
+
+void oops(char *ptr)                  // it'll show error after writing incorrect name
+{
+  REALWINDOW
+  ALLCLEAR
+  Box(24,10,57,17);
+  textcolor(WHITE);
+  gotoxy(26,11);
+  cprintf(">>>>>>>>>> OOPS!!! <<<<<<<<<<<");
+  window(26,14,55,16);
+  cprintf("%s",ptr);
+  getch();
+}
+
+int exUser_status(char heading[])         // it'll show existing users
+{
+  FILE *FP;
+  int i,index=-1;
+  char ipname[10][9],ch;
+  Box(24,8,57,18);
+  textcolor(WHITE);
+  gotoxy(26,9);
+  cprintf("%s",heading);
+  FP=fopen("NamesRcd.txt","rb");
+  for(i=0;fread(&ipname[i],sizeof(ipname[i]),1,FP);i++);
+  fclose(FP);
+  for(i=0;i<5;i++)
+  {
+    gotoxy(27,12+i);
+    cprintf("%02d. %s",i+1,ipname[i]);
+    gotoxy(43,12+i);
+    cprintf("%02d. %s",i+6,ipname[i+5]);
+  }
+  Box(26,20,55,24);
+  textcolor(WHITE);
+  gotoxy(28,21);
+  cprintf(">>>>>>> ENTER NAME <<<<<<<");
+  _setcursortype(_NORMALCURSOR);
+  for(i=0;i<9;i++)
+    name[i]='\0';
+  window(37,23,46,23);
+  while(1)
+  {
+    if(kbhit())                    //  Here if you hit any key of keyboard,
+    {                              //  then this function will return 1
+      ch=getch();                  //  And that key will be stored in ch.
+      if(ch!=' ')
+      {
+	clrscr();
+	if(ch==27)                 // if you press Esc
+	  return 0;
+	if(ch=='\b'&&index!=-1)    // if you press Backspace after typing the word
+	{
+	  name[index]='\0';
+	  index--;
+	}
+	if(ch!='\b'&&ch!=13)       // except Backspace & Enter, if we press a key
+	{
+	  index++;
+	  if(index>7)
+	    index=7;
+	  name[index]=ch;
+	}
+	for(i=0;i<=index;i++)      // showing the word
+	  printf("%c",name[i]);
+	if(ch==13 && index!=-1)    // if you press Enter after typing the word
+	  break;
+      }
+    }
+  }
+  for(i=0;i<10;i++)
+    if(strcmp(name,ipname[i])==0)
+      break;
+  if(i==10)
+  {
+    oops("You've entered incorrect name.   Press Enter to Main Menu.");
+    return 0;
+  }
+  return 1;
+}
+
+void selectTime(int t)            // it'll show time selecting window
+{
+  int i;
+  char *tt[6]={"       01 MIN      \n",
+	       "       02 MIN      \n",
+	       "       05 MIN      \n",
+	       "       10 MIN      \n",
+	       "       15 MIN      \n",
+	       "        BACK       ",};
+  textcolor(WHITE);
+  gotoxy(31,9);
+  cprintf(">>> SELECT TIME <<<");
+  window(31,12,49,23);
+  textbackground(BLACK);
+  clrscr();
+  for(i=1;i<=6;i++)
+  {
+    i==t?textbackground(GREEN):textbackground(BLACK);
+    cprintf(tt[i-1]);
+  }
+}
+
+void selectPara(int Pn)        // it'll show para selecting window
+{
+  int i;
+  char *para[6]={"     BEGINNER LEVEL-1     \n",
+		 "     BEGINNER LEVEL-2     \n",
+		 "    INTERMEDIATE LEVEL    \n",
+		 "      ADVANCE LEVEL       \n",
+		 "        PRO LEVEL         \n",
+		 "          BACK            ",};
+  textcolor(WHITE);
+  gotoxy(28,9);
+  cprintf(">>> SELECT YOUR LEVEL <<<");
+  window(28,12,53,23);
+  textbackground(BLACK);
+  clrscr();
+  for(i=1;i<=6;i++)
+  {
+    i==Pn?textbackground(GREEN):textbackground(BLACK);
+    cprintf(para[i-1]);
+  }
+}
+
+void Quit(int n)             // it'll show Quit window
+{
+  int i;
+  char *YN[2]={"    YES    ","    NO    "};
+  textcolor(WHITE);
+  gotoxy(30,12);
+  cprintf(">>> ARE YOU SURE? <<<");
+  window(30,15,50,16);
+  textbackground(BLACK);
+  clrscr();
+  for(i=0;i<2;i++)
+  {
+    i==n?textbackground(GREEN):textbackground(BLACK);
+    cprintf(YN[i]);
+  }
+}
+
+int NewUser()                           // it'll take user's name
+{
+  FILE *FP;
+  int i,index=-1,X1=29,Y1=14,X2=51,Y2=16;
+  char ch=1,ipname[9];
+  textcolor(WHITE);
+  gotoxy(32,9);
+  cprintf("PRESS ESC TO BACK");
+  gotoxy(29,12);
+  cprintf(">>> ENTER YOUR NAME <<<");
+  textcolor(GREEN);                      // creating green box
+  gotoxy(X1,Y1);
+  putch(218);                            // top-left corner
+  gotoxy(X2,Y1);
+  putch(191);                            // top-right corner
+  gotoxy(X1,Y2);
+  putch(192);                            // bottom-left corner
+  gotoxy(X2,Y2);
+  putch(217);                            // bottom-right corner
+  gotoxy(X1,Y1+1);
+  putch(179);                            // left vertical line
+  gotoxy(X2,Y1+1);
+  putch(179);                            // right vertical line
+  for(i=X1+1;i<X2;i++)
+  {
+    gotoxy(i,Y1);
+    putch(196);                          // top horizontal line
+    gotoxy(i,Y2);
+    putch(196);                          // bottom horizontal line
+  }
+  textcolor(WHITE);
+  _setcursortype(_NORMALCURSOR);
+  gotoxy(37,15);
+  window(37,15,44,15);
+  for(i=0;i<9;i++)
+    name[i]='\0';
+  while(1)
+  {
+    if(kbhit())                    //  Here if you hit any key of keyboard,
+    {                              //  then this function will return 1
+      ch=getch();                  //  And that key will be stored in ch.
+      if(ch!=' ')
+      {
+	clrscr();
+	if(ch==27)                 // if you press Esc
+	  return 1;
+	if(ch=='\b'&&index!=-1)    // if you press Backspace after typing the word
+	{
+	  name[index]='\0';
+	  index--;
+	}
+	if(ch!='\b'&&ch!=13)       // except Backspace & Enter, if we press a key
+	{
+	  index++;
+	  if(index>7)
+	    index=7;
+	  name[index]=ch;
+	}
+	for(i=0;i<=index;i++)      // showing the word
+	  printf("%c",name[i]);
+	if(ch==13 && index!=-1)    // if you press Enter after typing the word
+	  break;
+      }
+    }
+  }
+  FP=fopen("NamesRcd.txt","rb");
+  for(i=0;fread(&ipname,sizeof(ipname),1,FP);i++)
+    if(!strcmp(strlwr(name),ipname))
+    { fclose(FP); return 2; }
+  fclose(FP);
+  return 0;
+}
+
+void MainMenu(int n)        // it'll show Main Menu with highlighted option
+{
+  int i;
+  char *MM[5]={"    NEW USER     \n",
+	       "  EXISTING USER  \n",
+	       "     STATUS      \n",
+	       "      HELP       \n",
+	       "      QUIT       ",};
+  textcolor(WHITE);
+  gotoxy(32,9);
+  cprintf(">>> MAIN MENU <<<");
+  window(32,12,48,21);
+  textbackground(BLACK);
+  clrscr();
+  for(i=1;i<=5;i++)
+  {
+    i==n?textbackground(GREEN):textbackground(BLACK);
+    cprintf(MM[i-1]);
+  }
+}
+
+void typingContent(int lessonNo)   // it'll load typing content in array of particular lesson
+{
+  FILE *fp;
+  int i;
+  switch(lessonNo)
+  {
+    case 1:
+      fp=fopen("Lesson1.txt","r");
+      no_of_words=100;
+    break;
+    case 2:
+      fp=fopen("Lesson2.txt","r");
+      no_of_words=90;
+    break;
+    case 3:
+      fp=fopen("Lesson3.txt","r");
+      no_of_words=83;
+    break;
+    case 4:
+      fp=fopen("Lesson4.txt","r");
+      no_of_words=55;
+    break;
+    case 5:
+      fp=fopen("Lesson5.txt","r");
+      no_of_words=42;
+    break;
+  }
+  if(fp==NULL)
+  {
+    printf("file not found");
+    getch();
+    exit(0);
+  }
+  for(i=0;fscanf(fp,"%s",W[i].word)==1;i++)
+    W[i].color=2;             // here 2 denotes WHITE word i.e. untyped word
+  fclose(fp);
+}
+
+void typingWindow(int PARA,int MIN)     // it'll show whole typing window
+{
+  int i=0,j,index,END=0;
+  char ch;
+  REALWINDOW
+  ALLCLEAR
+  Box(11,8,70,20);              // creating big Box for TypingContent
+  window(13,9,68,19);
+  cprintf(">>>>>>>>>>>>> TYPE AS ACCURATE AS YOU CAN <<<<<<<<<<<<<<");
+  typingContent(PARA);
+  if(MIN==1)
+    min=1;
+  else if(MIN==2)
+    min=2;
+  else if(MIN==3)
+    min=5;
+  else if(MIN==4)
+    min=10;
+  else
+    min=15;
+  sec=0;
+  begin=0;                      // to show from 0th word to showingWords word
+  end=no_of_words;
+  while(1)
+  {
+    for(index=0;index<20;index++)
+      shabd[index]='\0';
+    index=-1;
+    BadaBox(i);                 // it'll print typing content in big box and ith word will be highlighted
+    ChotaBox();                 // this is the box, where we type
+    textcolor(WHITE);
+    if(i==0)
+    {
+      cprintf("START TYPING HERE PRESS ENTER KEY...             %02d:00",min);
+      vapis1:
+      if(getch()!=13)
+	goto vapis1;
+      clrscr();
+    }
+    gettime(&t);
+    getdate(&d);
+    while(1)
+    {
+      if(kbhit())
+      {
+	ch=getch();
+	if(ch!=27)
+	{
+	  clrscr();
+	  if(ch==' '&&index!=-1)       // if we press Space after typing the word
+	    break;
+	  if(ch=='\b'&&index!=-1)      // if we press Backspace after typing the word
+	  {
+	    shabd[index]='\0';
+	    index--;
+	  }
+	  if(ch!='\b'&&ch!=' ')        // except Backspace & Space, if we press a key
+	  {
+	    index++;
+	    if(index>20)
+	      index=20;
+	    shabd[index]=ch;
+	  }
+	  for(j=0;j<=index;j++)
+	    cprintf("%c",shabd[j]);
+	}
+	else
+	  END=1;
+      }
+      gotoxy(50,1);
+      showRemainingTime();
+      if((min==0&&sec==0)||END)                       // Time Over
+	break;
+    }
+    if(strcmp(shabd,W[i].word)==0)
+    { W[i].color=1; RW++; }                    // 1 = GREEN (Correct Words)
+    else
+    { W[i].color=0; WW++; }                    // 0 = RED (Incorrect Words)
+    if(W[end-1].color==0||W[end-1].color==1)   // if you type last word of the Screen
+    {
+      begin=end;
+      end+=no_of_words;
+    }
+    i++;
+    if((min==0&&sec==0)||END)                         // Time Over
+    { result(); break; }
+  }
+}
+
+void AddName()             // it'll add user's name in "NamesRcd.txt" file
+{
+  int i,j,k=1;
+  char filename[13],N[11][9],sampleName[9];
+  FILE *fp;
+  fp=fopen("NamesRcd.txt","rb");
+  while(fread(&sampleName,sizeof(sampleName),1,fp))
+    if(strcmp(sampleName,name)==0)
+    { k=0; break; }
+  fclose(fp);
+  if(k)
+  {
+    fp=fopen("NamesRcd.txt","ab");
+    fwrite(&name,sizeof(name),1,fp);
+    fclose(fp);
+    fp=fopen("NamesRcd.txt","rb");
+    for(i=0;fread(&N[i],sizeof(N[i]),1,fp);i++);
+    fclose(fp);
+    if(i==11)
+    {
+      fp=fopen("NamesRcd.txt","wb");
+      for(j=1;j<=10;j++)
+	fwrite(&N[j],sizeof(N[j]),1,fp);
+      fclose(fp);
+    }
+    strcpy(filename,N[0]);
+    strcat(filename,".txt");
+    remove(filename);
+  }
+}
+
+void AddRecord(struct DATA DD)      // it'll store the record of a person
+{
+  int i,j;
+  char filename[13];
+  struct DATA dt[11];
+  FILE *FP;
+  strcpy(filename,strlwr(name));
+  strcat(filename,".txt");
+  FP=fopen(filename,"ab");
+  fwrite(&DD,sizeof(DD),1,FP);
+  fclose(FP);
+  FP=fopen(filename,"rb");
+  for(i=0;fread(&dt[i],sizeof(dt[i]),1,FP);i++);
+  fclose(FP);
+  if(i==11)
+  {
+    FP=fopen(filename,"wb");
+    for(j=1;j<=10;j++)
+      fwrite(&dt[j],sizeof(dt[j]),1,FP);
+    fclose(FP);
+  }
+  AddName();
+}
+
+void result()                   // it'll show the result
+{
+  int i,nS,aCC;
+  struct DATA D;
+  REALWINDOW
+  ALLCLEAR
+  nS=netSpeed();
+  aCC=(RW*100)/(RW+WW);
+  Box(26,8,55,24);
+  textcolor(WHITE);
+  gotoxy(28,9);
+  cprintf(">>>>>>>>> RESULT <<<<<<<<<");
+  window(29,12,52,23);
+  cprintf(" NAME     -  ");
+  for(i=0;i<8;i++)
+    cprintf("%c",name[i]);
+  cprintf("\n\n\r SPEED    -  %02d WPM",nS);
+  cprintf("\n\n\r ACCURACY -  %02d %",aCC);
+  cprintf("\n\n\r DURATION -  ");
+  showTimeDuration();
+  cprintf("\n\n\r DATE     -  %02d-%02d-%04d",d.da_day,d.da_mon,d.da_year);
+  textbackground(GREEN);
+  cprintf("\n\n\r      PRESS ENTER       ");
+  D.ACCURACY=aCC;
+  D.SPEED=nS;
+  D.DATE=d;
+  D.TIME=t;
+  AddRecord(D);
+  vapis2:
+  if(getch()==13)                   // if you press Enter
+    restart();
+  else
+    goto vapis2;
+}
+
+void showTimeDuration()             // it'll show the time spent on typing
+{
+  int s=countSec,m=0;
+  while(s>=60)
+  {
+    s-=60;
+    m+=1;
+  }
+  cprintf("%02d:%02d MIN",m,s);
+}
+
+int netSpeed()                      // it'll return net speed
+{
+  float nS1,nS2;
+  nS1=(RW+WW)/(countSec*0.0167);
+  nS2=WW/(countSec*0.0167);
+  return((int)ceil(nS1-nS2));
+}
+
+void showRemainingTime()            // it'll show remaining time
+{
+    prevSec=t.ti_sec;
+    gettime(&t);
+    if(prevSec!=t.ti_sec)
+    {
+      sec--;
+      if(sec==-1)
+      {
+	sec=59;
+	min--;
+      }
+      prevSec=t.ti_sec;
+      countSec++;
+    }
+    printf("%02d:%02d",min,sec);
+}
+
+void BadaBox(int bgcl)         // it'll print typing Content in Big Box
+{
+  int i;
+  window(13,11,68,19);
+  clrscr();
+  textcolor(WHITE);
+  for(i=begin;i<end;i++)
+  {
+    if(W[i].color==1)          // correct words, we've typed
+      textcolor(GREEN);
+    else if(W[i].color==0)     // incorrect words, we've typed
+      textcolor(RED);
+    else                       // words, we haven't typed
+      textcolor(WHITE);
+    bgcl==i?textbackground(GREEN):textbackground(BLACK);
+    cprintf("%s",W[i].word);
+    textbackground(BLACK);
+    cprintf(" ");
+  }
+}
+
+void ChotaBox()               // it'll create the box, where we'll type
+{
+  window(11,21,70,25);
+  printf("\t\t\tPRESS ESC TO QUIT");
+  Box(2,2,59,4);
+  window(14,23,68,23);
+}
+
+void Box(int a1,int b1,int a2,int b2)      // it'll create a box
+{
+  int i;
+  textcolor(YELLOW);
+  gotoxy(a1,b1);
+  putch(201);                              // top-left corner
+  gotoxy(a2,b1);
+  putch(187);                              // top-right corner
+  gotoxy(a1,b2);
+  putch(200);                              // bottom-left corner
+  gotoxy(a2,b2);
+  putch(188);                              // bottom-right corner
+  for(i=a1+1;i<a2;i++)
+  {
+    gotoxy(i,b1);
+    putch(205);
+    gotoxy(i,b1+2);
+    putch(205);
+    gotoxy(i,b2);
+    putch(205);
+  }
+  for(i=b1+1;i<b2;i++)
+  {
+    gotoxy(a1,i);
+    i==b1+2?putch(204):putch(186);
+    gotoxy(a2,i);
+    i==b1+2?putch(185):putch(186);
+  }
+}
+
+void topHeading()              // it'll create top heading "TYPING BOOSTER"
+{
+  int i,a1=20,b1=2,a2=60,b2=6;
+  textcolor(GREEN);
+  gotoxy(a1,b1);
+  cprintf("%c",218);
+  gotoxy(a2,b1);
+  cprintf("%c",191);
+  gotoxy(a1+1,b1+1);
+  cprintf("%c",218);
+  gotoxy(a2-1,b1+1);
+  cprintf("%c",191);
+  gotoxy(a1+1,b2-1);
+  cprintf("%c",192);
+  gotoxy(a2-1,b2-1);
+  cprintf("%c",217);
+  gotoxy(a1,b2);
+  cprintf("%c",192);
+  gotoxy(a2,b2);
+  cprintf("%c",217);
+  for(i=a1+1;i<a2;i++)
+  {
+    gotoxy(i,b1);
+    cprintf("%c",196);
+    gotoxy(i,b2);
+    cprintf("%c",196);
+  }
+  for(i=a1+2;i<a2-1;i++)
+  {
+    gotoxy(i,b1+1);
+    cprintf("%c",196);
+    gotoxy(i,b2-1);
+    cprintf("%c",196);
+  }
+  for(i=b1+1;i<b2;i++)
+  {
+    gotoxy(a1,i);
+    cprintf("%c",179);
+    gotoxy(a2,i);
+    cprintf("%c",179);
+  }
+  for(i=b1+2;i<b2-1;i++)
+  {
+    gotoxy(a1+1,i);
+    cprintf("%c",179);
+    gotoxy(a2-1,i);
+    cprintf("%c",179);
+  }
+  gotoxy(33,4);
+  textcolor(WHITE);
+  cprintf("TYPING BOOSTER");
+}
